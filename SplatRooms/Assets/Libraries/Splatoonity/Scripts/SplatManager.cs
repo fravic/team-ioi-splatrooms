@@ -9,12 +9,7 @@ public struct Splat {
 	public Vector4 scaleBias;
 }
 
-public struct SplatReciever {
-
-}
-
-public class SplatManagerSystem
-{
+public class SplatManagerSystem {
 	static SplatManagerSystem m_Instance;
 	static public SplatManagerSystem instance {
 		get {
@@ -28,15 +23,6 @@ public class SplatManagerSystem
 	public int splatsY;
 
 	public Vector4 scores;
-	
-	internal List<Splat> m_Splats = new List<Splat>();
-	
-	public void AddSplat (Splat splat)
-	{
-		//Debug.Log ("Adding Splat");
-		m_Splats.Add (splat);
-	}
-
 }
 
 public class SplatManager : MonoBehaviour {
@@ -51,7 +37,7 @@ public class SplatManager : MonoBehaviour {
 	public RenderTexture splatTex;
 	public RenderTexture splatTexAlt;
 
-    public RenderTexture worldPosTex;
+  public RenderTexture worldPosTex;
 	public RenderTexture worldPosTexTemp;
 	public RenderTexture worldTangentTex;
 	public RenderTexture worldBinormalTex;
@@ -67,8 +53,26 @@ public class SplatManager : MonoBehaviour {
 	public RenderTexture RT4;
 	public Texture2D Tex4;
 
-    // Use this for initialization
-    void Start () {
+	private List<Splat> splatRenderQueue = new List<Splat>();
+
+	// Add a splat to this SplatManager
+	public void AddSplat(Matrix4x4 splatMatrix, Vector4 channelMask) {
+		Splat newSplat;
+		newSplat.splatMatrix = splatMatrix;
+		newSplat.channelMask = channelMask;
+
+		// Calculate a random offset in splatTex
+		float splatscaleX = 1.0f / splatsX;
+		float splatscaleY = 1.0f / splatsY;
+		float splatsBiasX = Mathf.Floor( Random.Range(0,splatsX * 0.99f) ) / splatsX;
+		float splatsBiasY = Mathf.Floor( Random.Range(0,splatsY * 0.99f) ) / splatsY;
+		newSplat.scaleBias = new Vector4(splatscaleX, splatscaleY, splatsBiasX, splatsBiasY );
+
+		splatRenderQueue.Add(newSplat);
+	}
+
+  // Use this for initialization
+  void Start () {
 
 		SplatManagerSystem.instance.splatsX = splatsX;
 		SplatManagerSystem.instance.splatsY = splatsY;
@@ -94,7 +98,6 @@ public class SplatManager : MonoBehaviour {
 		Shader.SetGlobalTexture ("_WorldBinormalTex", worldBinormalTex);
 		Shader.SetGlobalVector ("_SplatTexSize", new Vector4 (sizeX, sizeY, 0, 0));
 
-
 		// Textures for tallying scores
 		RT256 = new RenderTexture (256, 256, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
 		RT256.autoGenerateMips = true;
@@ -104,7 +107,6 @@ public class SplatManager : MonoBehaviour {
 		RT4.Create ();
 		Tex4 = new Texture2D (4, 4, TextureFormat.ARGB32, false);
 
-		
 		GameObject rtCameraObject = new GameObject ();
 		rtCameraObject.name = "rtCameraObject";
 		rtCameraObject.transform.position = Vector3.zero;
@@ -121,31 +123,10 @@ public class SplatManager : MonoBehaviour {
 		rtCamera.useOcclusionCulling = false;
 		rtCamera.enabled = false;
 
-		RenderTextures ();
-		BleedTextures ();
-		StartCoroutine( UpdateScores() );
-
-    }
-
-	/*
-	// Render textures using shader replacement.
-	// This will render all objects in the scene though.
-	// You could cull based on layers though.
-	void RenderTextures() {
-
-		Material worldPosMaterial = new Material (Shader.Find ("Splatoonity/WorldPosUnwrap"));
-		Material worldNormalMaterial = new Material (Shader.Find ("Splatoonity/WorldNormalUnwrap"));
-
-		rtCamera.targetTexture = worldPosTex;
-		rtCamera.RenderWithShader (Shader.Find ("Splatoonity/WorldPosUnwrap"), null);
-
-		rtCamera.targetTexture = worldTangentTex;
-		rtCamera.RenderWithShader (Shader.Find ("Splatoonity/WorldTangentUnwrap"), null);
-
-		rtCamera.targetTexture = worldBinormalTex;
-		rtCamera.RenderWithShader (Shader.Find ("Splatoonity/WorldBinormalUnwrap"), null);
-	}
-	*/
+		RenderTextures();
+		BleedTextures();
+		StartCoroutine(UpdateScores());
+  }
 
 	// Render textures with a command buffer.
 	// This is more flexible as you can explicitly add more objects to render without worying about layers.
@@ -166,20 +147,20 @@ public class SplatManager : MonoBehaviour {
 		// You could also use a multi render target and only have to draw each renderer once.
 		CommandBuffer cb = new CommandBuffer();
 		cb.SetRenderTarget(worldPosTex);
-		cb.ClearRenderTarget(true, true, new Color(0,0,0,0) );
+		cb.ClearRenderTarget(true, true, new Color(0,0,0,0));
 		cb.DrawRenderer(envRenderer, worldPosMaterial);
 
 		cb.SetRenderTarget(worldTangentTex);
-		cb.ClearRenderTarget(true, true, new Color(0,0,0,0) );
+		cb.ClearRenderTarget(true, true, new Color(0,0,0,0));
 		cb.DrawRenderer(envRenderer, worldTangentMaterial);
 
 		cb.SetRenderTarget(worldBinormalTex);
-		cb.ClearRenderTarget(true, true, new Color(0,0,0,0) );
+		cb.ClearRenderTarget(true, true, new Color(0,0,0,0));
 		cb.DrawRenderer(envRenderer, worldBiNormalMaterial);
 
 		// Only have to render the camera once!
-		rtCamera.AddCommandBuffer (CameraEvent.AfterEverything, cb);
-		rtCamera.Render ();
+		rtCamera.AddCommandBuffer(CameraEvent.AfterEverything, cb);
+		rtCamera.Render();
 	}
 
 
@@ -206,7 +187,7 @@ public class SplatManager : MonoBehaviour {
 	// Each splat is tested against the entire world position texture.
 	void PaintSplats() {
 
-		if (SplatManagerSystem.instance.m_Splats.Count > 0) {
+		if (splatRenderQueue.Count > 0) {
 			
 			Matrix4x4[] SplatMatrixArray = new Matrix4x4[10];
 			Vector4[] SplatScaleBiasArray = new Vector4[10];
@@ -214,11 +195,11 @@ public class SplatManager : MonoBehaviour {
 
 			// Render up to 10 splats per frame.
 			int i = 0;
-			while( SplatManagerSystem.instance.m_Splats.Count > 0 && i < 10 ){
-				SplatMatrixArray [i] = SplatManagerSystem.instance.m_Splats [0].splatMatrix;
-				SplatScaleBiasArray [i] = SplatManagerSystem.instance.m_Splats [0].scaleBias;
-				SplatChannelMaskArray [i] = SplatManagerSystem.instance.m_Splats [0].channelMask;
-				SplatManagerSystem.instance.m_Splats.RemoveAt(0);
+			while(splatRenderQueue.Count > 0 && i < 10 ){
+				SplatMatrixArray [i] = splatRenderQueue[0].splatMatrix;
+				SplatScaleBiasArray [i] = splatRenderQueue[0].scaleBias;
+				SplatChannelMaskArray [i] = splatRenderQueue[0].channelMask;
+				splatRenderQueue.RemoveAt(0);
 				i++;
 			}
 			splatBlitMaterial.SetMatrixArray ( "_SplatMatrix", SplatMatrixArray );
