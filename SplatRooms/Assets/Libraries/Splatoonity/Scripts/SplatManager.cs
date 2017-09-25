@@ -9,22 +9,6 @@ public struct Splat {
 	public Vector4 scaleBias;
 }
 
-public class SplatManagerSystem {
-	static SplatManagerSystem m_Instance;
-	static public SplatManagerSystem instance {
-		get {
-			if (m_Instance == null)
-				m_Instance = new SplatManagerSystem();
-			return m_Instance;
-		}
-	}
-
-	public int splatsX;
-	public int splatsY;
-
-	public Vector4 scores;
-}
-
 public class SplatManager : MonoBehaviour {
 
 	public int sizeX;
@@ -73,10 +57,6 @@ public class SplatManager : MonoBehaviour {
 
   // Use this for initialization
   void Start () {
-
-		SplatManagerSystem.instance.splatsX = splatsX;
-		SplatManagerSystem.instance.splatsY = splatsY;
-
 		splatBlitMaterial = new Material (Shader.Find ("Splatoonity/SplatBlit"));
 		
 		splatTex = new RenderTexture (sizeX, sizeY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
@@ -278,10 +258,7 @@ public class SplatManager : MonoBehaviour {
 			scores.z = scoresColor.b;
 			scores.w = scoresColor.a;
 
-			SplatManagerSystem.instance.scores = scores;
-
 			yield return new WaitForSeconds (1.0f);
-
 		}
 
 	}
