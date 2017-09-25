@@ -31,7 +31,7 @@ public class SplatMaker : MonoBehaviour {
 	}
 
 	// From Splatoonity/SplatMakerExample.cs
-	void MakeSplat(Vector3 point, Vector3 normal) {
+	public void MakeSplat(Vector3 point, Vector3 normal) {
 		Vector3 leftVec = Vector3.Cross ( normal, Vector3.up );
 		float randScale = Random.Range(0.5f,1.5f);
 		

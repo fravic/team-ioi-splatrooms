@@ -72,7 +72,9 @@ public class SplatManager : MonoBehaviour {
 		worldBinormalTex = new RenderTexture (sizeX, sizeY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 		worldBinormalTex.Create();
 
-		Shader.SetGlobalTexture ("_SplatTex", splatTex);
+		// Set the Splat texture on this object's renderer
+		GetComponent<Renderer>().material.SetTexture("_SplatTex", splatTex);
+
 		Shader.SetGlobalTexture ("_WorldPosTex", worldPosTex);
 		Shader.SetGlobalTexture ("_WorldTangentTex", worldTangentTex);
 		Shader.SetGlobalTexture ("_WorldBinormalTex", worldBinormalTex);
