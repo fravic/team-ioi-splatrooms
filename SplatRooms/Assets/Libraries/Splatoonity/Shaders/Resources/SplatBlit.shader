@@ -105,8 +105,19 @@
 	float4 fragCompile (v2f i) : COLOR
 	{
 		float4 splatSDF = tex2D (_MainTex, i.uv);
+		// This smoothstep "hardens" the texture so that unpainted areas aren't calculated as painted
 		float4 splatMask = smoothstep( 0.5 - 0.01, 0.5 + 0.01, splatSDF );
 		return splatMask;
+	}
+
+	float4 fragFillWorldTex (v2f i) : COLOR
+	{
+		float4 splatSDF = tex2D (_MainTex, i.uv);
+		float4 worldSDF = tex2D (_WorldPosTex, i.uv);
+		if (worldSDF.w == 0) {
+			return float4(1, 0, 0, 0);
+		}
+		return splatSDF;
 	}
 
 	ENDCG
@@ -162,6 +173,18 @@
 			#pragma fragmentoption ARB_precision_hint_fastest
 			#pragma vertex vert
 			#pragma fragment fragCompile
+			#pragma target 3.0
+			ENDCG
+		}
+
+		//Pass 4 fill in unmapped world tex with red
+		Pass
+		{
+			Name "Compile"
+			CGPROGRAM
+			#pragma fragmentoption ARB_precision_hint_fastest
+			#pragma vertex vert
+			#pragma fragment fragFillWorldTex
 			#pragma target 3.0
 			ENDCG
 		}

@@ -33,6 +33,7 @@ public class SplatManager : MonoBehaviour {
 
 	public Vector4 scores = Vector4.zero;
 
+	public RenderTexture RTWorldUnmappedRed;  // Holds splatTex with unmapped UV coords filled in with red
 	public RenderTexture RT256;
 	public RenderTexture RT4;
 	public Texture2D Tex4;
@@ -61,6 +62,8 @@ public class SplatManager : MonoBehaviour {
 		
 		splatTex = new RenderTexture (sizeX, sizeY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 		splatTex.Create ();
+		RTWorldUnmappedRed = new RenderTexture(sizeX, sizeY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
+		RTWorldUnmappedRed.Create();
 		splatTexAlt = new RenderTexture (sizeX, sizeY, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Linear);
 		splatTexAlt.Create ();
 		worldPosTex = new RenderTexture (sizeX, sizeY, 0, RenderTextureFormat.ARGBFloat, RenderTextureReadWrite.Linear);
@@ -219,7 +222,10 @@ public class SplatManager : MonoBehaviour {
 
 			yield return new WaitForEndOfFrame();
 
-			Graphics.Blit (splatTex, RT256, splatBlitMaterial, 3);
+			splatBlitMaterial.SetTexture ("_WorldPosTex", worldPosTex);
+			// Shader pass 4 fills in RTWorldUnmappedRed with the splatTex + world pos tex if it is zero
+			Graphics.Blit (splatTex, RTWorldUnmappedRed, splatBlitMaterial, 4);
+			Graphics.Blit (RTWorldUnmappedRed, RT256, splatBlitMaterial, 3);
 			Graphics.Blit (RT256, RT4);
 
 			RenderTexture.active = RT4;
@@ -255,10 +261,13 @@ public class SplatManager : MonoBehaviour {
 			scoresColor += Tex4.GetPixel(3,2);
 			scoresColor += Tex4.GetPixel(3,3);
 
-			scores.x = scoresColor.r;
-			scores.y = scoresColor.g;
-			scores.z = scoresColor.b;
-			scores.w = scoresColor.a;
+			// Max value for each score is 16, since there are 16 pixels each with a value of 0-1
+			scores.x = scoresColor.r / 16.0f;
+			scores.y = scoresColor.g / 16.0f;
+			scores.z = scoresColor.b / 16.0f;
+			scores.w = scoresColor.a / 16.0f;
+
+			Debug.Log(scores.x);
 
 			yield return new WaitForSeconds (1.0f);
 		}
