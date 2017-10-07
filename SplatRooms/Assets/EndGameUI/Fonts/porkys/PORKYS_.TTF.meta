@@ -1,0 +1,22 @@
+fileFormatVersion: 2
+guid: ac7c9c62e9db9a746902dba6f1fbad51
+timeCreated: 1507413333
+licenseType: Free
+TrueTypeFontImporter:
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontName: Porky's
+  fontNames:
+  - Porky's
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: 4796f3a4ef364944da6d9b8ae48b81d7, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
