@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace EndGameScene {
 	public class GameManager : MonoBehaviour {
@@ -19,7 +20,9 @@ namespace EndGameScene {
 		
 		// Update is called once per frame
 		void Update () {
-			
+			if (OVRInput.Get(OVRInput.Button.One)) {
+				SceneManager.LoadSceneAsync("MainScene");
+			}
 		}
 	}
 }
