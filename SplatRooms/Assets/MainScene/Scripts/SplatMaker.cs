@@ -8,6 +8,8 @@ using UnityEngine;
  */
 public class SplatMaker : MonoBehaviour {
 
+	public AudioClip splatSound;
+
 	// Just use one channel for now
 	Vector4 channelMask = new Vector4(1, 0, 0, 0);
 
@@ -48,5 +50,25 @@ public class SplatMaker : MonoBehaviour {
 		sm.AddSplat(splatMatrix, channelMask);
 
 		GameObject.Destroy( newSplatObject );
+
+		PlaySplatSound(point);
+	}
+
+	void PlaySplatSound(Vector3 atPos) {
+		GameObject newAudioObj = new GameObject();
+		newAudioObj.transform.position = atPos;
+		AudioSource audioSrc = newAudioObj.AddComponent(typeof(AudioSource)) as AudioSource;
+		audioSrc.clip = splatSound;
+		audioSrc.spatialize = true;
+		audioSrc.spatialBlend = 1.0f;
+		audioSrc.volume = 0.25f;
+		audioSrc.maxDistance = 3;
+		audioSrc.Play();
+		StartCoroutine(DestroySplatSound(newAudioObj, splatSound.length));
+	}
+
+	IEnumerator DestroySplatSound(GameObject soundObj, float delay) {
+		yield return new WaitForSeconds(delay);
+		Destroy(soundObj);
 	}
 }

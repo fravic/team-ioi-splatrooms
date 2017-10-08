@@ -15,6 +15,9 @@ public class ShootHandler : MonoBehaviour {
   public GameObject paintBallPrefab;
 
   private const float SHOOT_FORCE = 2.0f;
+  private const float SHOOT_INTERVAL_S = 0.015f;
+
+  private float _lastShotTime = 0.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -25,6 +28,10 @@ public class ShootHandler : MonoBehaviour {
 	}
 
   public void Shoot(ShootData shootData) {
+    if (Time.time - _lastShotTime < SHOOT_INTERVAL_S) {
+      return;
+    }
+
     GameObject newPaintBall = Instantiate(paintBallPrefab);
     newPaintBall.transform.position = shootData.position;
     
@@ -32,5 +39,7 @@ public class ShootHandler : MonoBehaviour {
 
     Vector3 startForce = shootData.direction * SHOOT_FORCE;
     rb.AddForce(startForce, ForceMode.Impulse);
+
+    _lastShotTime = Time.time;
   }
 }
