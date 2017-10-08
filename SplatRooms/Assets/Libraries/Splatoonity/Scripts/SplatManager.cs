@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Rendering;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,7 +10,13 @@ public struct Splat {
 	public Vector4 scaleBias;
 }
 
+[System.Serializable]
+public class UpdateScoreEvent : UnityEvent<float> {
+}
+
 public class SplatManager : MonoBehaviour {
+
+	public UpdateScoreEvent updateScore;
 
 	public int sizeX;
 	public int sizeY;
@@ -267,7 +274,7 @@ public class SplatManager : MonoBehaviour {
 			scores.z = scoresColor.b / 16.0f;
 			scores.w = scoresColor.a / 16.0f;
 
-			Debug.Log(scores.x);
+			updateScore.Invoke(scores.x);
 
 			yield return new WaitForSeconds (1.0f);
 		}
