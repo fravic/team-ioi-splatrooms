@@ -12,8 +12,7 @@ public class ScoreText : MonoBehaviour {
 
   void Awake() {
     float score = PlayerPrefs.GetFloat("PlayerScore");
-    //StartCoroutine(AnimateScore(score));
-    StartCoroutine(AnimateScore(.9f));
+    StartCoroutine(AnimateScore(score));
   }
 
   IEnumerator AnimateScore(float score) {
