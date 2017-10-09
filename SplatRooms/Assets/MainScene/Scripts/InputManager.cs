@@ -17,6 +17,8 @@ public class InputManager : MonoBehaviour {
 	public GameObject shootSpawnPoint;
 	public ShootEvent shootEvent;
 
+	bool _shootingEnabled = false;
+
 	// Use this for initialization
 	void Start () {
 		
@@ -24,6 +26,10 @@ public class InputManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (!_shootingEnabled) {
+			return;
+		}
+
 		// Oculus right hand trigger
 		if (OVRInput.Get(OVRInput.Button.SecondaryIndexTrigger)) {
 			Vector3 localPos = OVRInput.GetLocalControllerPosition(OVRInput.Controller.RTrackedRemote);
@@ -53,5 +59,9 @@ public class InputManager : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	public void EnableShooting() {
+		_shootingEnabled = true;
 	}
 }

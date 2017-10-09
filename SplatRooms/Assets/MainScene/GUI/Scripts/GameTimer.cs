@@ -13,17 +13,21 @@ public class GameTimer : MonoBehaviour {
 	public GameObject textObject;
 
 	CanvasGroup _canvasGroup;
+	bool _timerEnabled = false;
 	bool _endEventFired = false;
 	float _startTime;
 
 	// Use this for initialization
 	void Start () {
 		_canvasGroup = GetComponent<CanvasGroup>();
-		StartTimer ();
 	}
 
 	// Update is called once per frame
 	void Update () {
+		if (!_timerEnabled) {
+			return;
+		}
+
 		float secondsLeft = Math.Max(secondsInGame - (Time.time - _startTime), 0);
 		System.TimeSpan t = System.TimeSpan.FromSeconds(secondsLeft);
 		textObject.GetComponent<Text>().text = t.ToString ("mm\\:ss");
@@ -45,5 +49,6 @@ public class GameTimer : MonoBehaviour {
 	public void StartTimer() {
 		_startTime = Time.time;
 		_endEventFired = false;
+		_timerEnabled = true;
 	}
 }
