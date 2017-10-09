@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 /*
  * ScoreText
@@ -7,9 +8,21 @@ using UnityEngine.UI;
  */
 [RequireComponent(typeof(Text))]
 public class ScoreText : MonoBehaviour {
+  float _scoreDisplay;
+
   void Awake() {
-    float score = Mathf.Round(PlayerPrefs.GetFloat("PlayerScore") * 100);
-		GetComponent<Text>().text = score.ToString() + "%";
-    Debug.Log("End Game Score: " + score);
+    float score = PlayerPrefs.GetFloat("PlayerScore");
+    //StartCoroutine(AnimateScore(score));
+    StartCoroutine(AnimateScore(.9f));
+  }
+
+  IEnumerator AnimateScore(float score) {
+    while (_scoreDisplay < score) {
+      yield return new WaitForSeconds(0.02f);
+      _scoreDisplay = Mathf.Min(_scoreDisplay + 0.01f, score);
+
+      int scoreText = Mathf.RoundToInt(_scoreDisplay * 100);
+      GetComponent<Text>().text = scoreText.ToString() + "%";
+    }
   }
 }
